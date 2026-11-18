@@ -1,0 +1,58 @@
+{
+  "sessionId": "0623b04e-e60d-4d92-b9ab-336e935b7707",
+  "applicationVersion": "1.0.0",
+  "startedUtc": "2026-11-18T01:14:08.203Z",
+  "endedUtc": "2026-11-18T01:14:27.228Z",
+  "endReason": "Completed",
+  "requestedDurationSeconds": 20,
+  "actualDurationSeconds": 19.024,
+  "adapter": {
+    "selectionMode": "Explicit",
+    "id": "en0",
+    "name": "Wi-Fi (en0)",
+    "type": "Wi-Fi",
+    "localIPv4": "192.168.1.223",
+    "defaultGateway": "192.168.1.1",
+    "statusAtStart": "Connected",
+    "routing": "ICMP socket bound to en0 (IP_BOUND_IF, index 14)"
+  },
+  "targets": {
+    "internal": {
+      "target": "192.168.1.1",
+      "source": "DefaultGateway"
+    },
+    "external": {
+      "target": "8.8.8.8",
+      "source": "Configured"
+    }
+  },
+  "pingIntervalMs": 1000,
+  "pingTimeoutMs": 2000,
+  "statusThresholds": {
+    "windowSize": 20,
+    "internalElevatedLatencyMs": 30,
+    "externalElevatedLatencyMs": 100,
+    "redConsecutiveFailures": 3,
+    "redLossPercent": 20
+  },
+  "platform": {
+    "operatingSystem": "macOS",
+    "osVersion": "macOS 26.5.0",
+    "architecture": "Arm64",
+    "runtime": ".NET 10.0.0"
+  },
+  "events": [
+    {
+      "timestampUtc": "2026-11-18T01:14:08.203Z",
+      "offsetMs": 0,
+      "kind": "SessionStarted",
+      "message": "Session started on Wi-Fi (en0) via ICMP socket bound to en0 (IP_BOUND_IF, index 14)."
+    },
+    {
+      "timestampUtc": "2026-11-18T01:14:27.228Z",
+      "offsetMs": 19023.588,
+      "kind": "SessionEnded",
+      "message": "Session completed."
+    }
+  ]
+}

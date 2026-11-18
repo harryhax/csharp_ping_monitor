@@ -1,0 +1,37 @@
+{
+  "sessionId": "0623b04e-e60d-4d92-b9ab-336e935b7707",
+  "generatedUtc": "2026-11-18T01:14:27.231Z",
+  "packetLossFormula": "packetLossPercent = failed / completed * 100; completed excludes probes cancelled when the session was stopped; latency figures use successful replies only.",
+  "internal": {
+    "target": "192.168.1.1",
+    "resolvedIp": "192.168.1.1",
+    "sent": 20,
+    "completed": 20,
+    "received": 20,
+    "failed": 0,
+    "cancelled": 0,
+    "packetLossPercent": 0,
+    "minLatencyMs": 2.702,
+    "averageLatencyMs": 6.286,
+    "maxLatencyMs": 51.239,
+    "statusCounts": {
+      "Success": 20
+    }
+  },
+  "external": {
+    "target": "8.8.8.8",
+    "resolvedIp": "8.8.8.8",
+    "sent": 20,
+    "completed": 20,
+    "received": 20,
+    "failed": 0,
+    "cancelled": 0,
+    "packetLossPercent": 0,
+    "minLatencyMs": 15.084,
+    "averageLatencyMs": 25.036,
+    "maxLatencyMs": 76.561,
+    "statusCounts": {
+      "Success": 20
+    }
+  }
+}

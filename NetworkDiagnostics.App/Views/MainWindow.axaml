@@ -1,0 +1,173 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:NetworkDiagnostics.App.ViewModels"
+        xmlns:m="using:NetworkDiagnostics.App.Models"
+        xmlns:v="using:NetworkDiagnostics.App.Views"
+        x:Class="NetworkDiagnostics.App.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Title="Network Diagnostics"
+        Width="1180" Height="900" MinWidth="880" MinHeight="600"
+        WindowStartupLocation="CenterScreen"
+        Background="{DynamicResource PageBrush}">
+  <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+    <StackPanel Margin="20" Spacing="14">
+
+      <!-- Header -->
+      <StackPanel>
+        <TextBlock Text="Network Diagnostics" FontSize="22" FontWeight="SemiBold" />
+        <TextBlock Classes="hint" FontSize="12"
+                   Text="Measures latency and packet loss to your router and to the internet at the same time. Statuses are preliminary measurements, not a diagnosis." />
+      </StackPanel>
+
+      <!-- Messages -->
+      <Border IsVisible="{Binding HasError}" Background="{DynamicResource ErrorBannerBrush}" BorderBrush="{DynamicResource ErrorBannerBorderBrush}"
+              BorderThickness="1" CornerRadius="6" Padding="12,8">
+        <Grid ColumnDefinitions="*,Auto">
+          <SelectableTextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" VerticalAlignment="Center" />
+          <Button Grid.Column="1" Content="Dismiss" Command="{Binding DismissMessagesCommand}" Margin="10,0,0,0" />
+        </Grid>
+      </Border>
+      <Border IsVisible="{Binding HasInfo}" Background="{DynamicResource InfoBannerBrush}" BorderBrush="{DynamicResource InfoBannerBorderBrush}"
+              BorderThickness="1" CornerRadius="6" Padding="12,8">
+        <Grid ColumnDefinitions="*,Auto">
+          <SelectableTextBlock Text="{Binding InfoMessage}" TextWrapping="Wrap" VerticalAlignment="Center" />
+          <Button Grid.Column="1" Content="Dismiss" Command="{Binding DismissMessagesCommand}" Margin="10,0,0,0" />
+        </Grid>
+      </Border>
+
+      <Grid ColumnDefinitions="3*,14,2*">
+        <!-- A. Network configuration -->
+        <Border Classes="card">
+          <StackPanel Spacing="10" IsEnabled="{Binding CanEditSettings}">
+            <TextBlock Classes="section" Text="Network configuration" />
+
+            <Grid ColumnDefinitions="*,Auto">
+              <ComboBox ItemsSource="{Binding Adapters}" SelectedItem="{Binding SelectedAdapter}" HorizontalAlignment="Stretch">
+                <ComboBox.ItemTemplate>
+                  <DataTemplate x:DataType="m:AdapterOption">
+                    <StackPanel>
+                      <TextBlock Text="{Binding Title}" FontWeight="SemiBold" />
+                      <TextBlock Text="{Binding Details}" Classes="hint" />
+                    </StackPanel>
+                  </DataTemplate>
+                </ComboBox.ItemTemplate>
+              </ComboBox>
+              <Button Grid.Column="1" Content="Refresh" Margin="8,0,0,0" VerticalAlignment="Stretch"
+                      Command="{Binding RefreshAdaptersCommand}" ToolTip.Tip="Re-scan network adapters" />
+            </Grid>
+
+            <Grid ColumnDefinitions="Auto,*,Auto,*" RowDefinitions="Auto,Auto,Auto" Margin="0,2,0,0">
+              <TextBlock Grid.Row="0" Grid.Column="0" Classes="label" Text="Type" Margin="0,0,10,4" />
+              <TextBlock Grid.Row="0" Grid.Column="1" Classes="value" Text="{Binding ConnectionType}" />
+              <TextBlock Grid.Row="0" Grid.Column="2" Classes="label" Text="Status" Margin="16,0,10,4" />
+              <TextBlock Grid.Row="0" Grid.Column="3" Classes="value" Text="{Binding ConnectionStatus}" />
+              <TextBlock Grid.Row="1" Grid.Column="0" Classes="label" Text="Local IP" Margin="0,0,10,4" />
+              <TextBlock Grid.Row="1" Grid.Column="1" Classes="value" Text="{Binding LocalIp}" />
+              <TextBlock Grid.Row="1" Grid.Column="2" Classes="label" Text="Gateway" Margin="16,0,10,4" />
+              <TextBlock Grid.Row="1" Grid.Column="3" Classes="value" Text="{Binding GatewayText}" />
+              <TextBlock Grid.Row="2" Grid.Column="0" Classes="label" Text="Routing" Margin="0,0,10,0" VerticalAlignment="Top" />
+              <TextBlock Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="3" Classes="value" Text="{Binding RoutingText}"
+                         Foreground="{Binding RoutingSupported, Converter={x:Static v:BoolToBrushConverter.SupportedRouting}}" />
+            </Grid>
+
+            <Separator Margin="0,4" />
+
+            <Grid ColumnDefinitions="*,14,*">
+              <StackPanel Spacing="4">
+                <TextBlock Classes="label" Text="Internal target (router)" />
+                <TextBox Text="{Binding EffectiveInternalTarget, Mode=OneWay}" IsReadOnly="True" IsVisible="{Binding !UseInternalOverride}" />
+                <TextBox Text="{Binding InternalOverride}" PlaceholderText="e.g. 192.168.1.1" IsVisible="{Binding UseInternalOverride}" />
+                <TextBlock Classes="error" Text="{Binding InternalTargetError}" IsVisible="{Binding InternalTargetError, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                <TextBlock Classes="hint" Text="Detected automatically from the selected adapter's default gateway." IsVisible="{Binding !UseInternalOverride}" />
+              </StackPanel>
+              <StackPanel Grid.Column="2" Spacing="4">
+                <TextBlock Classes="label" Text="External target (internet)" />
+                <TextBox Text="{Binding ExternalTarget}" PlaceholderText="IPv4 address or hostname" />
+                <TextBlock Classes="error" Text="{Binding ExternalTargetError}" IsVisible="{Binding ExternalTargetError, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                <TextBlock Classes="hint" Text="Default 8.8.8.8 (Google Public DNS)." />
+              </StackPanel>
+            </Grid>
+
+            <Expander Header="Advanced settings" HorizontalAlignment="Stretch">
+              <StackPanel Spacing="10">
+                <CheckBox IsChecked="{Binding UseInternalOverride}" Content="Use a manual internal target instead of the detected gateway" />
+                <Grid ColumnDefinitions="Auto,160,24,Auto,160" RowDefinitions="Auto">
+                  <TextBlock Classes="label" Text="Ping interval (ms)" Margin="0,0,8,0" />
+                  <NumericUpDown Grid.Column="1" Value="{Binding IntervalMs}" Minimum="200" Maximum="60000" Increment="100" FormatString="0" />
+                  <TextBlock Grid.Column="3" Classes="label" Text="Reply timeout (ms)" Margin="0,0,8,0" />
+                  <NumericUpDown Grid.Column="4" Value="{Binding TimeoutMs}" Minimum="100" Maximum="30000" Increment="100" FormatString="0" />
+                </Grid>
+                <TextBlock Classes="hint" TextWrapping="Wrap"
+                           Text="One probe is outstanding per destination at a time. If a reply takes longer than the interval, the missed send slots are skipped rather than queued." />
+              </StackPanel>
+            </Expander>
+          </StackPanel>
+        </Border>
+
+        <!-- B. Test controls -->
+        <Border Grid.Column="2" Classes="card">
+          <StackPanel Spacing="10">
+            <TextBlock Classes="section" Text="Test controls" />
+            <Grid ColumnDefinitions="Auto,*">
+              <TextBlock Classes="label" Text="Duration" Margin="0,0,10,0" />
+              <ComboBox Grid.Column="1" ItemsSource="{Binding Durations}" SelectedItem="{Binding SelectedDuration}"
+                        IsEnabled="{Binding CanEditSettings}" HorizontalAlignment="Stretch">
+                <ComboBox.ItemTemplate>
+                  <DataTemplate x:DataType="x:Int32">
+                    <TextBlock Text="{Binding StringFormat='{}{0} minutes'}" />
+                  </DataTemplate>
+                </ComboBox.ItemTemplate>
+              </ComboBox>
+            </Grid>
+
+            <UniformGrid Columns="2">
+              <Button Content="Start diagnostics" Command="{Binding StartCommand}" Classes="accent"
+                      HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="0,0,4,0" />
+              <Button Content="Stop diagnostics" Command="{Binding StopCommand}"
+                      HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="4,0,0,0" />
+            </UniformGrid>
+
+            <ProgressBar Value="{Binding Progress}" Minimum="0" Maximum="100" Height="6" />
+
+            <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto">
+              <TextBlock Grid.Row="0" Classes="label" Text="Status" Margin="0,0,10,4" />
+              <TextBlock Grid.Row="0" Grid.Column="1" Classes="value" FontWeight="SemiBold" Text="{Binding StatusText}" />
+              <TextBlock Grid.Row="1" Classes="label" Text="Elapsed" Margin="0,0,10,4" />
+              <TextBlock Grid.Row="1" Grid.Column="1" Classes="metric" Text="{Binding ElapsedText}" />
+              <TextBlock Grid.Row="2" Classes="label" Text="Remaining" Margin="0,0,10,0" />
+              <TextBlock Grid.Row="2" Grid.Column="1" Classes="metric" Text="{Binding RemainingText}" />
+            </Grid>
+
+            <Separator Margin="0,4" />
+            <Button Content="Export results…" Command="{Binding ExportCommand}"
+                    HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" />
+            <TextBlock Classes="hint" Text="Saves a ZIP with session details, every measurement (CSV) and a summary. Available after a test completes or is stopped." />
+          </StackPanel>
+        </Border>
+      </Grid>
+
+      <!-- C. Live monitoring -->
+      <Grid ColumnDefinitions="*,14,*">
+        <v:MonitorPanelView DataContext="{Binding InternalPanel}" GraphBrush="#2F6FDB" />
+        <v:MonitorPanelView Grid.Column="2" DataContext="{Binding ExternalPanel}" GraphBrush="#8E44AD" />
+      </Grid>
+
+      <!-- Session events -->
+      <Border Classes="card">
+        <Expander Header="Session events (adapter changes, name resolution, start/stop)" HorizontalAlignment="Stretch" IsExpanded="False">
+          <ItemsControl ItemsSource="{Binding EventLog}" MaxHeight="200">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="x:String">
+                <SelectableTextBlock Text="{Binding}" FontFamily="Menlo, Consolas, monospace" FontSize="12" />
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </Expander>
+      </Border>
+
+      <TextBlock Classes="hint" HorizontalAlignment="Center">
+        <Run Text="Settings are stored at " /><Run Text="{Binding SettingsFilePath, Mode=OneWay}" />
+      </TextBlock>
+    </StackPanel>
+  </ScrollViewer>
+</Window>

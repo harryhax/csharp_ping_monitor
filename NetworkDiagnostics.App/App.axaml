@@ -1,0 +1,40 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="NetworkDiagnostics.App.App"
+             Name="Network Diagnostics"
+             RequestedThemeVariant="Default">
+  <Application.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key="Light">
+          <SolidColorBrush x:Key="PageBrush" Color="#F3F4F6" />
+          <SolidColorBrush x:Key="CardBrush" Color="#FFFFFF" />
+          <SolidColorBrush x:Key="CardBorderBrush" Color="#E1E4EA" />
+          <SolidColorBrush x:Key="MutedTextBrush" Color="#5B6170" />
+          <SolidColorBrush x:Key="ErrorBannerBrush" Color="#FDECEC" />
+          <SolidColorBrush x:Key="ErrorBannerBorderBrush" Color="#E8A5A0" />
+          <SolidColorBrush x:Key="InfoBannerBrush" Color="#E8F1FD" />
+          <SolidColorBrush x:Key="InfoBannerBorderBrush" Color="#A8C5EE" />
+          <SolidColorBrush x:Key="GraphGridBrush" Color="#1F000000" />
+          <SolidColorBrush x:Key="GraphTextBrush" Color="#6B7280" />
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="Dark">
+          <SolidColorBrush x:Key="PageBrush" Color="#16181D" />
+          <SolidColorBrush x:Key="CardBrush" Color="#202329" />
+          <SolidColorBrush x:Key="CardBorderBrush" Color="#30343C" />
+          <SolidColorBrush x:Key="MutedTextBrush" Color="#A3A9B5" />
+          <SolidColorBrush x:Key="ErrorBannerBrush" Color="#3A1F1F" />
+          <SolidColorBrush x:Key="ErrorBannerBorderBrush" Color="#7A3A35" />
+          <SolidColorBrush x:Key="InfoBannerBrush" Color="#1D2A3D" />
+          <SolidColorBrush x:Key="InfoBannerBorderBrush" Color="#36527A" />
+          <SolidColorBrush x:Key="GraphGridBrush" Color="#26FFFFFF" />
+          <SolidColorBrush x:Key="GraphTextBrush" Color="#9CA3AF" />
+        </ResourceDictionary>
+      </ResourceDictionary.ThemeDictionaries>
+    </ResourceDictionary>
+  </Application.Resources>
+  <Application.Styles>
+    <FluentTheme />
+    <StyleInclude Source="avares://NetworkDiagnostics/Views/AppStyles.axaml" />
+  </Application.Styles>
+</Application>

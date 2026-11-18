@@ -1,0 +1,69 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:NetworkDiagnostics.App.ViewModels"
+             xmlns:v="using:NetworkDiagnostics.App.Views"
+             xmlns:c="using:NetworkDiagnostics.App.Controls"
+             x:Class="NetworkDiagnostics.App.Views.MonitorPanelView"
+             x:DataType="vm:MonitorPanelViewModel">
+  <Border Classes="card">
+    <Grid RowDefinitions="Auto,Auto,Auto,Auto,*">
+      <!-- Header with traffic light -->
+      <Grid ColumnDefinitions="*,Auto">
+        <StackPanel>
+          <TextBlock Classes="section" Margin="0" Text="{Binding Title}" />
+          <TextBlock Classes="hint" Text="{Binding Subtitle}" />
+        </StackPanel>
+        <Border Grid.Column="1" CornerRadius="14" Padding="10,4" VerticalAlignment="Top"
+                Background="{Binding HealthLevel, Converter={x:Static v:HealthLevelToBrushConverter.Instance}}"
+                ToolTip.Tip="{Binding HealthReason}">
+          <StackPanel Orientation="Horizontal" Spacing="6">
+            <Ellipse Width="10" Height="10" Fill="White" VerticalAlignment="Center" />
+            <TextBlock Text="{Binding HealthLabel}" Foreground="White" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center" />
+          </StackPanel>
+        </Border>
+      </Grid>
+
+      <Grid Grid.Row="1" ColumnDefinitions="Auto,*" Margin="0,10,0,0">
+        <TextBlock Classes="label" Text="Destination" Margin="0,0,10,0" />
+        <TextBlock Grid.Column="1" Classes="value" FontWeight="SemiBold" Text="{Binding Destination}" />
+      </Grid>
+      <Grid Grid.Row="2" ColumnDefinitions="Auto,*" Margin="0,4,0,0">
+        <TextBlock Classes="label" Text="Status" Margin="0,0,10,0" />
+        <TextBlock Grid.Column="1" Classes="value" Text="{Binding ConnectionStatus}" />
+      </Grid>
+
+      <!-- Metrics -->
+      <Grid Grid.Row="3" Margin="0,12,0,8" ColumnDefinitions="*,*,*,*,*" RowDefinitions="Auto,Auto,Auto,Auto">
+        <TextBlock Grid.Row="0" Grid.Column="0" Classes="label" Text="Latest" />
+        <TextBlock Grid.Row="1" Grid.Column="0" Classes="metric" Text="{Binding Latest}" />
+        <TextBlock Grid.Row="0" Grid.Column="1" Classes="label" Text="Average" />
+        <TextBlock Grid.Row="1" Grid.Column="1" Classes="metric" Text="{Binding Average}" />
+        <TextBlock Grid.Row="0" Grid.Column="2" Classes="label" Text="Minimum" />
+        <TextBlock Grid.Row="1" Grid.Column="2" Classes="metric" Text="{Binding Minimum}" />
+        <TextBlock Grid.Row="0" Grid.Column="3" Classes="label" Text="Maximum" />
+        <TextBlock Grid.Row="1" Grid.Column="3" Classes="metric" Text="{Binding Maximum}" />
+
+        <TextBlock Grid.Row="2" Grid.Column="0" Classes="label" Text="Sent" Margin="0,8,0,0" />
+        <TextBlock Grid.Row="3" Grid.Column="0" Classes="metric" Text="{Binding Sent}" />
+        <TextBlock Grid.Row="2" Grid.Column="1" Classes="label" Text="Received" Margin="0,8,0,0" />
+        <TextBlock Grid.Row="3" Grid.Column="1" Classes="metric" Text="{Binding Received}" />
+        <TextBlock Grid.Row="2" Grid.Column="2" Classes="label" Text="Lost" Margin="0,8,0,0" />
+        <TextBlock Grid.Row="3" Grid.Column="2" Classes="metric" Text="{Binding Lost}" />
+        <TextBlock Grid.Row="2" Grid.Column="3" Classes="label" Text="Packet loss" Margin="0,8,0,0" />
+        <TextBlock Grid.Row="3" Grid.Column="3" Classes="metric" Text="{Binding LossPercent}" />
+      </Grid>
+
+      <Grid Grid.Row="4" RowDefinitions="*,Auto">
+        <c:LatencyGraph MinHeight="160"
+                        Points="{Binding GraphPoints}"
+                        Version="{Binding GraphVersion}"
+                        DurationSeconds="{Binding GraphDurationSeconds}"
+                        LineBrush="{Binding $parent[v:MonitorPanelView].GraphBrush}"
+                        GridBrush="{DynamicResource GraphGridBrush}"
+                        TextBrush="{DynamicResource GraphTextBrush}" />
+        <TextBlock Grid.Row="1" Classes="hint" Margin="0,4,0,0"
+                   Text="Line: round-trip latency. Red bands: no reply (timeouts and failures are never plotted as 0 ms)." />
+      </Grid>
+    </Grid>
+  </Border>
+</UserControl>
