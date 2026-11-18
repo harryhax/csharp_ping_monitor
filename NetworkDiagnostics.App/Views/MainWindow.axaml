@@ -13,11 +13,21 @@
     <StackPanel Margin="20" Spacing="14">
 
       <!-- Header -->
-      <StackPanel>
-        <TextBlock Text="Network Diagnostics" FontSize="22" FontWeight="SemiBold" />
-        <TextBlock Classes="hint" FontSize="12"
-                   Text="Measures latency and packet loss to your router and to the internet at the same time. Statuses are preliminary measurements, not a diagnosis." />
-      </StackPanel>
+      <Grid ColumnDefinitions="*,Auto">
+        <StackPanel>
+          <TextBlock Text="Network Diagnostics" FontSize="22" FontWeight="SemiBold" />
+          <TextBlock Classes="hint" FontSize="12" TextWrapping="Wrap"
+                     Text="Measures latency and packet loss to your router and to the internet at the same time. Statuses are preliminary measurements, not a diagnosis." />
+        </StackPanel>
+        <Button Grid.Column="1" Classes="discord" Margin="16,0,0,0" VerticalAlignment="Center"
+                Click="OnDiscordClick" ToolTip.Tip="Opens discord.gg/Ay3jqa6uRc in your browser"
+                AutomationProperties.Name="Join our Discord server">
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <PathIcon Data="{StaticResource DiscordLogo}" Width="20" Height="20" Foreground="White" />
+            <TextBlock Text="Join our Discord" VerticalAlignment="Center" FontWeight="SemiBold" />
+          </StackPanel>
+        </Button>
+      </Grid>
 
       <!-- Messages -->
       <Border IsVisible="{Binding HasError}" Background="{DynamicResource ErrorBannerBrush}" BorderBrush="{DynamicResource ErrorBannerBorderBrush}"

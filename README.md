@@ -7,6 +7,11 @@ Lagging in GTA Online, Fortnite, Call of Duty, Rocket League, Counter-Strike or 
 [![Downloads](https://img.shields.io/github/downloads/harryhax/csharp_ping_monitor/total)](https://github.com/harryhax/csharp_ping_monitor/releases)
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS-blue)](#installation)
 [![.NET](https://img.shields.io/badge/.NET-10-512BD4)](https://dotnet.microsoft.com/download/dotnet/10.0)
+[![Discord](https://img.shields.io/badge/Discord-Join%20the%20community-5865F2?logo=discord&logoColor=white)](https://discord.gg/Ay3jqa6uRc)
+
+[![Join our Discord](https://img.shields.io/badge/Join%20our%20Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/Ay3jqa6uRc)
+
+Questions, bug reports or lag stories to share? [Join the Network Diagnostics Discord](https://discord.gg/Ay3jqa6uRc).
 
 ## Screenshots
 
@@ -239,10 +244,11 @@ docs/sample-report/         Example exported report
 - [All releases](https://github.com/harryhax/csharp_ping_monitor/releases)
 - [Release workflow runs](https://github.com/harryhax/csharp_ping_monitor/actions/workflows/release.yml)
 - [Issues](https://github.com/harryhax/csharp_ping_monitor/issues)
+- [Discord community](https://discord.gg/Ay3jqa6uRc)
 
 ## Contributing
 
-To report a bug, [open an issue](https://github.com/harryhax/csharp_ping_monitor/issues). Include your operating system and version, the adapter type (Wi-Fi or Ethernet), what you expected and what happened. An exported results ZIP helps; check it first, because it contains your local IP address and gateway.
+To report a bug, [open an issue](https://github.com/harryhax/csharp_ping_monitor/issues) or ask on [Discord](https://discord.gg/Ay3jqa6uRc). Include your operating system and version, the adapter type (Wi-Fi or Ethernet), what you expected and what happened. An exported results ZIP helps; check it first, because it contains your local IP address and gateway.
 
 To propose a change, open an issue to discuss it first, then send a pull request. Make sure `dotnet test` passes.
 
