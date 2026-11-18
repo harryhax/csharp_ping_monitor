@@ -1,5 +1,17 @@
 # Network Diagnostics
 
+Lagging in GTA Online, Fortnite, Call of Duty, Rocket League, Counter-Strike or any video game you play online? Find out if its your internal network or outside network.
+
+[![Latest Release](https://img.shields.io/github/v/release/harryhax/csharp_ping_monitor?label=release)](https://github.com/harryhax/csharp_ping_monitor/releases/latest)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/harryhax/csharp_ping_monitor/release.yml?label=release%20build)](https://github.com/harryhax/csharp_ping_monitor/actions/workflows/release.yml)
+[![Downloads](https://img.shields.io/github/downloads/harryhax/csharp_ping_monitor/total)](https://github.com/harryhax/csharp_ping_monitor/releases)
+[![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS-blue)](#installation)
+[![.NET](https://img.shields.io/badge/.NET-10-512BD4)](https://dotnet.microsoft.com/download/dotnet/10.0)
+
+## Screenshots
+
+![Network Diagnostics on macOS after a 15-minute test, showing router and internet latency graphs and statistics](screenshots/ss_01.png)
+
 **Lagging in GTA Online, Counter-Strike 2, Fortnite or Call of Duty? Find out why.**
 
 Network Diagnostics is a free desktop application for Windows and macOS that helps gamers investigate high ping, latency spikes, packet loss and unstable internet connections.
@@ -8,11 +20,6 @@ If you're seeing rubberbanding, delayed hit registration, random disconnects or 
 
 Unlike a one-off speed test, Network Diagnostics monitors your connection for up to 30 minutes at a time, so you can spot intermittent problems that only appear while you play.
 
-[![Latest Release](https://img.shields.io/github/v/release/harryhax/csharp_ping_monitor?label=release)](https://github.com/harryhax/csharp_ping_monitor/releases/latest)
-[![Build Status](https://img.shields.io/github/actions/workflow/status/harryhax/csharp_ping_monitor/release.yml?label=release%20build)](https://github.com/harryhax/csharp_ping_monitor/actions/workflows/release.yml)
-[![Downloads](https://img.shields.io/github/downloads/harryhax/csharp_ping_monitor/total)](https://github.com/harryhax/csharp_ping_monitor/releases)
-[![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS-blue)](#installation)
-[![.NET](https://img.shields.io/badge/.NET-10-512BD4)](https://dotnet.microsoft.com/download/dotnet/10.0)
 
 ## Download
 
@@ -80,10 +87,6 @@ Comparing the two targets shows where a problem is:
 | Failing | Healthy | Usually the router ignoring pings, or (on macOS) the Local Network permission; see [Known limitations](#known-limitations) |
 
 The statuses are measurements, not a diagnosis.
-
-## Screenshots
-
-![Network Diagnostics on macOS after a 15-minute test, showing router and internet latency graphs and statistics](screenshots/ss_01.png)
 
 ## Installation
 
