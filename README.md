@@ -1,187 +1,215 @@
 # Network Diagnostics
 
-A small desktop app (C#, .NET 10, Avalonia 12) that measures latency and packet loss to two destinations at the same time:
+Network Diagnostics is a cross-platform desktop application for Windows and macOS. It monitors network connectivity, latency and packet loss to your local router and to an internet host at the same time, so you can tell a local network problem from an internet problem.
 
-- **Internal**: the default gateway (router) of the selected network adapter.
-- **External**: a configurable internet host (default `8.8.8.8`).
+[![Latest Release](https://img.shields.io/github/v/release/harryhax/csharp_ping_monitor?label=release)](https://github.com/harryhax/csharp_ping_monitor/releases/latest)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/harryhax/csharp_ping_monitor/release.yml?label=release%20build)](https://github.com/harryhax/csharp_ping_monitor/actions/workflows/release.yml)
+[![Downloads](https://img.shields.io/github/downloads/harryhax/csharp_ping_monitor/total)](https://github.com/harryhax/csharp_ping_monitor/releases)
+[![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS-blue)](#installation)
+[![.NET](https://img.shields.io/badge/.NET-10-512BD4)](https://dotnet.microsoft.com/download/dotnet/10.0)
 
-Results update live and can be exported as a ZIP for later analysis. There is no server, account, database or telemetry.
+## Download
+
+**[Download the Latest Release](https://github.com/harryhax/csharp_ping_monitor/releases/latest)**
+
+| Platform | Architecture | Download |
+|---|---|---|
+| Windows | x64 | [NetworkDiagnostics-win-x64.zip](https://github.com/harryhax/csharp_ping_monitor/releases/latest/download/NetworkDiagnostics-win-x64.zip) |
+| macOS | Apple Silicon (ARM64) | [NetworkDiagnostics-osx-arm64.zip](https://github.com/harryhax/csharp_ping_monitor/releases/latest/download/NetworkDiagnostics-osx-arm64.zip) |
+| macOS | Intel (x64) | [NetworkDiagnostics-osx-x64.zip](https://github.com/harryhax/csharp_ping_monitor/releases/latest/download/NetworkDiagnostics-osx-x64.zip) |
+
+These links always download the newest release. The version number is shown on the release page and in the badge above.
+
+## Features
+
+- **Two targets at once.** Pings the selected adapter's default gateway (*Internal*) and an internet host (*External*, default `8.8.8.8`) at the same time.
+- **ICMP ping measurements.** One echo request per second per target. Only one probe per target is in flight at a time, and missed slots are skipped rather than queued.
+- **Live statistics.** Latest, average, minimum and maximum latency; sent, received and lost counts; and packet loss %.
+- **Live latency graphs.** One per target. Failed probes are drawn as red bands, never as 0 ms.
+- **Traffic-light status.** Each target shows a coloured status with a text label, based on the last 20 probes (see [Status rules](#status-rules)).
+- **Network adapter selection.** Choose a specific adapter or **Automatic (System Default)**. The app shows the adapter's type, IPv4 address, gateway and connection status. An explicit choice is enforced by binding probes to that adapter, or reported as unsupported. The app never silently uses another adapter and never changes routing tables.
+- **Session controls.** Test duration of 1, 5, 10 or 30 minutes, with Start and Stop, elapsed and remaining time, and session status.
+- **Network events.** Adapter disconnects, reconnects, address changes, hostname resolution and warnings are logged during the session.
+- **Export.** Save a ZIP containing `session.json`, `internal-ping.csv`, `external-ping.csv` and `summary.json`.
+- **Saved settings.** Your selections are stored in a local JSON file and restored on startup.
+
+There is no server, account, database or telemetry.
+
+### Local network or internet?
+
+Comparing the two targets shows where a problem is:
+
+| Internal (router) | External (internet) | Likely location of the problem |
+|---|---|---|
+| Healthy | Healthy | No problem detected |
+| Healthy | Failing or slow | Beyond your router: modem, ISP or the remote host |
+| Failing or slow | Failing or slow | Your local network: Wi-Fi signal, cable, adapter or router |
+| Failing | Healthy | Usually the router ignoring pings, or (on macOS) the Local Network permission; see [Known limitations](#known-limitations) |
+
+The statuses are measurements, not a diagnosis.
+
+## Screenshots
+
+> Screenshots have not been added yet. *(Placeholder: add an image of the main window to `docs/` and reference it here.)*
+
+## Installation
+
+Release builds are self-contained, so you do not need to install the .NET runtime.
+
+### Windows
+
+1. Download [`NetworkDiagnostics-win-x64.zip`](https://github.com/harryhax/csharp_ping_monitor/releases/latest/download/NetworkDiagnostics-win-x64.zip).
+2. Extract the ZIP to a folder.
+3. Run `NetworkDiagnostics.exe`.
+
+The Windows build is not code-signed, so SmartScreen may warn the first time you run it.
+
+### macOS (Apple Silicon)
+
+1. Download [`NetworkDiagnostics-osx-arm64.zip`](https://github.com/harryhax/csharp_ping_monitor/releases/latest/download/NetworkDiagnostics-osx-arm64.zip).
+2. Extract the ZIP.
+3. Open `NetworkDiagnostics.app`.
+
+### macOS (Intel)
+
+1. Download [`NetworkDiagnostics-osx-x64.zip`](https://github.com/harryhax/csharp_ping_monitor/releases/latest/download/NetworkDiagnostics-osx-x64.zip).
+2. Extract the ZIP.
+3. Open `NetworkDiagnostics.app`.
+
+### macOS security note
+
+The macOS release builds are ad-hoc signed only. They are not signed with an Apple Developer ID or notarized, so Gatekeeper may say the app cannot be opened or is from an unidentified developer. If you trust the download, try to open the app once, then allow just this app in **System Settings → Privacy & Security** by clicking **Open Anyway**. Do not disable Gatekeeper globally.
+
+When macOS asks to let the app find devices on your local network, choose **Allow**. Without it, pings to your router are blocked (see [Known limitations](#known-limitations)).
 
 ## Using the app
 
-1. Choose a network adapter, or leave **Automatic (System Default)**. The panel shows the adapter's type, local IPv4 address, gateway, connection status, and how probes will be routed.
-2. Check the targets. The internal target is filled in from the adapter's gateway. To enter a different one, open **Advanced settings → Use a manual internal target**. The external target accepts an IPv4 address or a hostname.
-3. Pick a duration (1, 5, 10 or 30 minutes) and press **Start diagnostics**.
-4. Watch both panels: latest, average, min and max latency; sent, received and lost counts; loss %; a traffic-light status; and a latency graph. Failed probes show as red bands on the graph, never as 0 ms.
-5. Press **Stop diagnostics** at any time. Results collected so far are kept.
-6. Press **Export results…** to save the ZIP.
+1. Choose a network adapter, or leave **Automatic (System Default)**.
+2. Check the targets. The internal target is filled in from the adapter's gateway; to override it, open **Advanced settings → Use a manual internal target**. The external target accepts an IPv4 address or a hostname.
+3. Pick a duration and press **Start diagnostics**.
+4. Press **Stop diagnostics** at any time. Results collected so far are kept.
+5. Press **Export results…** to save the ZIP.
 
-### Traffic-light status
+### Status rules
 
-These statuses are preliminary measurement statuses, not a diagnosis. Thresholds are defined in `StatusThresholds` and stored in the settings file. Each status is based on the last 20 completed probes:
+Each status is based on the last 20 completed probes. Thresholds are stored in the settings file.
 
 | Status | Rule (first match wins) |
 |---|---|
 | 🔴 **Not responding** | 3 or more consecutive failures |
-| 🔴 **Heavy packet loss** | ≥ 20 % of the window failed (needs ≥ 5 samples) |
+| 🔴 **Heavy packet loss** | 20 % or more of the window failed (needs at least 5 samples) |
 | 🟡 **Intermittent failures** | any failure in the window |
-| 🟡 **Elevated latency** | window average above 30 ms (internal) / 100 ms (external) |
+| 🟡 **Elevated latency** | window average above 30 ms (internal) or 100 ms (external) |
 | 🟢 **Responding normally** | otherwise |
-
-Each colour is always shown with its text label.
 
 ### Export contents
 
 | File | Contents |
 |---|---|
-| `session.json` | session ID, app version, start/end (UTC), requested and actual duration, end reason, adapter (selection mode, name, type, IPv4, gateway, routing method), targets, interval, timeout, thresholds, platform, and an event log (adapter disconnects and address changes, DNS resolution, warnings) |
-| `internal-ping.csv`, `external-ping.csv` | one row per probe: `session_id, sequence, timestamp_utc, scheduled_offset_ms, sent_offset_ms, adapter_id, adapter_local_ip, target_type, target, resolved_ip, rtt_ms, status, error_detail` |
-| `summary.json` | per target: sent, completed, received, failed, cancelled, loss %, min/avg/max, and counts per status |
+| `session.json` | Session ID, app version, start and end time (UTC), requested and actual duration, end reason, adapter details, targets, interval, timeout, thresholds, platform, and the event log |
+| `internal-ping.csv`, `external-ping.csv` | One row per probe: `session_id, sequence, timestamp_utc, scheduled_offset_ms, sent_offset_ms, adapter_id, adapter_local_ip, target_type, target, resolved_ip, rtt_ms, status, error_detail` |
+| `summary.json` | Per target: sent, completed, received, failed, cancelled, loss %, min/avg/max latency, and counts per status |
 
-Formatting:
-- Numbers use invariant culture (`.` decimal separator).
-- Timestamps are ISO 8601 UTC (`2026-11-18T01:11:21.990Z`).
-- Failed rows keep their status, and their `rtt_ms` is empty.
+- Numbers use invariant formatting (`.` as the decimal separator).
+- Timestamps are ISO 8601 UTC, for example `2026-11-18T01:11:21.990Z`.
+- Failed probes keep their status (`Timeout`, `DestinationUnreachable`, `DnsFailure` and so on) and have an empty `rtt_ms`.
+- Packet loss = failed ÷ completed × 100. Probes cancelled by **Stop** are excluded.
+- The export includes the adapter's local IPv4 address and gateway. It does not include the machine name, user name or MAC addresses.
 
-The export does not include the machine name, user name, MAC addresses or credentials. It does include the adapter's local IPv4 address and gateway, because the spec requires them.
+A sample report from a real 20-second session is in [docs/sample-report/](docs/sample-report/).
 
-`status` is one of: `Success`, `Timeout`, `DestinationUnreachable`, `TtlExpired`, `LocalAdapterFailure`, `DnsFailure`, `PermissionDenied`, `Cancelled`, `Error`.
+## How adapter binding works
 
-A sample report from a real 20-second session (macOS, Wi-Fi) is in [docs/sample-report/](docs/sample-report/).
-
-## How measurements work
-
-- **Scheduling.** Each target has its own monitor, and the two run concurrently. Probes are planned on a fixed grid: slot × interval, measured from session start with a monotonic clock. Only one probe per target is in flight at a time. If a reply takes longer than the interval, the missed slots are **skipped, not queued**, so there is never a backlog or a burst.
-- **Latency.** RTT is measured with a monotonic stopwatch around the send and receive. It includes a small amount of user-space overhead (typically well under 0.5 ms).
-- **Statistics.** Packet loss = `failed / completed × 100`.
-  - In-flight probes are not "completed".
-  - A probe abandoned by **Stop** is recorded as `Cancelled` and excluded from loss and latency.
-  - Latency min, average and max use successful replies only.
-- **Hostnames.** Names are resolved to IPv4 once, by the operating-system resolver. If resolution fails, each attempt is recorded as `DnsFailure` and retried at the next slot. Once a name resolves, that address is used for the rest of the session.
-- **Adapter watcher.** The selected adapter is polled every 2 s. Disconnects, reconnects, removal, address changes, and (in Automatic mode) changes of the system default adapter are recorded as session events.
-
-### Adapter binding (how "use this adapter" is honoured)
-
-The .NET `Ping` class cannot choose an interface, so explicit selection uses platform-specific code. No routing tables are modified.
+The .NET `Ping` class cannot choose an adapter, so an explicitly selected adapter uses platform-specific code:
 
 | Platform | Explicit adapter | Automatic |
 |---|---|---|
-| **macOS** | Unprivileged ICMP datagram socket (`SOCK_DGRAM`/`IPPROTO_ICMP`) with `IP_BOUND_IF`, so the kernel does a scoped route lookup on that interface only. Verified on macOS 26 / Apple Silicon. | `System.Net.NetworkInformation.Ping` |
-| **Windows** | `IcmpSendEcho2Ex` (iphlpapi) with the adapter's IPv4 as the source address. Windows' default *strong host* send model sends it out the interface that owns that address. No elevation needed. | `System.Net.NetworkInformation.Ping` |
-| Linux / other | Reported as unsupported. The app asks you to choose Automatic. | `Ping` |
+| macOS | Unprivileged ICMP socket bound to the interface with `IP_BOUND_IF` | `System.Net.NetworkInformation.Ping` |
+| Windows | `IcmpSendEcho2Ex` with the adapter's IPv4 address as the source | `System.Net.NetworkInformation.Ping` |
+| Other | Reported as unsupported; use Automatic | `System.Net.NetworkInformation.Ping` |
 
-If binding isn't possible (for example, the interface has gone or ICMP sockets are refused), the **Routing** line turns red and Start reports the reason. The app never quietly falls back to a different interface. If a saved adapter is missing at startup, the app switches to Automatic and shows a notice. If the selected adapter disappears just before Start, Start is refused.
+If binding isn't possible, the **Routing** line turns red and Start reports the reason.
 
-## Build and run
+## Building from source
 
-You need the .NET 10 SDK.
+Requirements: the [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0).
 
 ```bash
-dotnet build
-dotnet run --project NetworkDiagnostics.App
+git clone https://github.com/harryhax/csharp_ping_monitor.git
+cd csharp_ping_monitor
+
+dotnet restore NetworkDiagnostics.sln
+dotnet build NetworkDiagnostics.sln
+dotnet run --project NetworkDiagnostics.App/NetworkDiagnostics.App.csproj
 ```
 
-Settings are saved to `%LOCALAPPDATA%\NetworkDiagnostics\settings.json` (Windows) or `~/Library/Application Support/NetworkDiagnostics/settings.json` (macOS). The file is written when a test starts and when the app closes. A missing, corrupt or out-of-range file falls back to defaults.
+On macOS, `dotnet run` uses the terminal's Local Network permission, so test permission behaviour with a packaged `.app` instead.
 
-## Tests
+### Tests
 
 ```bash
-dotnet test                       # unit tests: mocked probes, no network needed
+dotnet test NetworkDiagnostics.Tests/NetworkDiagnostics.Tests.csproj
 ```
 
-Unit tests cover:
-- packet-loss, min, average and max calculations
-- timeout handling
-- concurrent monitoring
-- cancellation and Stop
-- duration handling and the no-backlog scheduler
-- configuration serialization and sanitising
-- CSV escaping and invariant formatting
-- the ZIP layout
-- adapter selection
-- invalid configuration
-- ICMP packet parsing
-- the traffic-light rules
-- the view model's Start → Stop → Export flow
-
-### Integration tests (real network)
-
-These are skipped unless you opt in.
+Unit tests use simulated probes and do not need a network connection. Integration tests that use the real network are skipped unless you opt in:
 
 ```bash
-ND_INTEGRATION=1 dotnet test --filter Category=Integration
-# also write a sample report from a real 20-second session:
-ND_INTEGRATION=1 ND_SAMPLE_REPORT="$PWD/docs/sample-report" dotnet test --filter Category=Integration
+ND_INTEGRATION=1 dotnet test NetworkDiagnostics.Tests/NetworkDiagnostics.Tests.csproj --filter Category=Integration
 ```
 
-They check that:
-- adapters are enumerated, and the default adapter has a gateway
-- an explicitly bound probe reaches the gateway
-- an Automatic probe reaches the gateway
-- a probe to TEST-NET-1 (`192.0.2.1`) times out rather than reporting 0 ms
-- a 20-second session completes with the expected number of probes
-
-**Manual checks on each platform** (run the published app, not `dotnet run`; see the macOS note below):
-
-1. Confirm the adapter list matches the system's network settings, and that the gateway matches `route -n get default` (macOS) or `ipconfig` (Windows).
-2. With Wi-Fi and Ethernet both connected, select the **non-default** adapter and run a 1-minute test. On a second terminal, confirm the traffic leaves that interface:
-   - macOS: `sudo tcpdump -ni en5 icmp`
-   - Windows: Wireshark, or `pktmon start --capture` followed by `pktmon stop`.
-3. Unplug the cable or turn Wi-Fi off during a test. Check that failures are recorded (not 0 ms), the status turns red, and a disconnect event appears under **Session events**.
-4. Set the external target to an invalid value (`8.8.8`), and to a name that doesn't exist (`nonexistent.invalid`). The first should be rejected before start; the second should be recorded as `DnsFailure`.
-5. Press Stop mid-test, export, and open the ZIP.
-
-## Publishing (self-contained)
+### Packaging locally
 
 ```bash
-# macOS: produces artifacts/<rid>/Network Diagnostics.app (ad-hoc signed)
-scripts/publish-macos.sh osx-arm64      # Apple Silicon
+scripts/publish-macos.sh osx-arm64      # artifacts/osx-arm64/Network Diagnostics.app (ad-hoc signed)
 scripts/publish-macos.sh osx-x64        # Intel
-
-# Windows: produces artifacts/publish/<rid>/NetworkDiagnostics.exe (single file)
-pwsh scripts/publish-windows.ps1 -Rid win-x64
-# or, from any OS:
-dotnet publish NetworkDiagnostics.App -c Release -r win-x64 --self-contained true \
-  -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o artifacts/publish/win-x64
+pwsh scripts/publish-windows.ps1 -Rid win-x64   # artifacts/publish/win-x64/NetworkDiagnostics.exe
 ```
 
-The ad-hoc signature is enough to run the app on the Mac that built it. To distribute it to other Macs, sign it with a Developer ID certificate (`codesign --options runtime`) and notarize it (`xcrun notarytool`). Windows builds are unsigned, so SmartScreen may warn on first run.
+Official releases are built by the [Release workflow](.github/workflows/release.yml) when a `v*` tag (for example `v0.1.2`) is pushed. It runs the tests, creates the versioned GitHub release, then publishes, ad-hoc signs (macOS) and uploads three ZIPs with fixed names: `NetworkDiagnostics-win-x64.zip`, `NetworkDiagnostics-osx-arm64.zip` and `NetworkDiagnostics-osx-x64.zip`. The fixed names keep the README download links working for every release.
+
+## Technology stack
+
+- C# and .NET 10
+- [Avalonia UI](https://avaloniaui.net/) 12 (Fluent theme) for the cross-platform desktop UI
+- [CommunityToolkit.Mvvm](https://github.com/CommunityToolkit/dotnet) for the MVVM view models
+- Microsoft.Extensions.DependencyInjection
+- Platform networking: `System.Net.NetworkInformation`, BSD ICMP sockets on macOS, and `iphlpapi` (`IcmpSendEcho2Ex`) on Windows
+- xUnit for tests
+- A custom Avalonia control for the latency graph (no charting library)
 
 ## Known limitations
 
-- **macOS Local Network permission (important).** On macOS 15 and later, an app bundle needs the user's permission to reach devices on the local network, and **packets to the router are silently dropped until it is granted**. Without the permission the router looks dead: 100 % internal loss while the internet works. To deal with this:
-  - The app sends one echo to the gateway at startup, so the permission prompt appears before a test.
-  - The bundle's `Info.plist` explains why the permission is needed.
-  - If the internal target never replies while the external one does, the app shows a banner pointing to *System Settings → Privacy & Security → Local Network* and records a warning in the session events.
-
-  `dotnet run` inherits the terminal's permission, so this only appears with the published `.app`.
-- **Windows binding has not been run on Windows.** The Windows code compiles, and a self-contained `win-x64` build is produced, but it has not been executed on a Windows machine. Source-address binding relies on the strong host send model; an interface with `weakhostsend` enabled (`netsh interface ipv4 show interface <n>`) could route differently. Windows Firewall rules that block outbound ICMP will show up as timeouts.
-- **Non-default adapter gateways on macOS** come from .NET's routing-table query. This was verified for the primary adapter only, not for a secondary one.
-- **DNS resolution** uses the system resolver and is not bound to the selected adapter.
-- **IPv4 only.** IPv6 targets are rejected.
-- Adapters without an IPv4 address are not listed, because they cannot be tested.
-- If an explicitly selected Windows adapter changes its IPv4 address mid-session, later probes fail with `LocalAdapterFailure` and an address-change event is recorded. Restart the test to use the new address.
-- Statuses are simple threshold rules, not a diagnosis. Some routers deliberately de-prioritise ICMP, which inflates gateway latency.
+- **macOS Local Network permission.** On macOS 15 and later, packets to the router are silently dropped until you allow the app to access the local network. The router then looks unreachable (100 % internal loss) while the internet works. The app pings the gateway once at startup so the prompt appears early, and shows a banner if the router never replies but the internet does. To change your answer, go to **System Settings → Privacy & Security → Local Network**.
+- **Windows adapter binding is untested on Windows hardware.** It relies on Windows' default strong host send model. An interface with `weakhostsend` enabled could route differently.
+- **Secondary adapters on macOS.** Gateway detection has been verified only for the primary adapter.
+- **DNS** uses the system resolver and is not bound to the selected adapter.
+- **IPv4 only.** IPv6 targets are rejected, and adapters without an IPv4 address are not listed.
+- Some routers deprioritise ICMP, which can inflate gateway latency.
 
 ## Project layout
 
 ```text
-NetworkDiagnostics.Core/      UI-free engine (net10.0)
-  Models/                     AdapterInfo, PingResult, LatencyStatistics, AppSettings, DiagnosticSession, …
-  Interfaces/                 INetworkInterfaceProvider, IPingProbe(Factory), IHostResolver, ISettingsStore
-  Monitoring/                 PingMonitor, DiagnosticSessionRunner, AdapterWatcher, ProbeScheduler,
-                              TargetValidator, AdapterSelector, SessionOptionsBuilder, IcmpPacket, …
-  Statistics/                 StatisticsAccumulator, HealthEvaluator
-  Export/                     PingCsvWriter, SessionReportExporter, JsonDefaults
-  Configuration/              JsonSettingsStore
-NetworkDiagnostics.App/       Avalonia UI (MVVM, CommunityToolkit.Mvvm, Microsoft.Extensions.DependencyInjection)
-  Views/ ViewModels/ Models/ Controls/LatencyGraph.cs Services/ Configuration/ServiceRegistration.cs
-  Platforms/                  SystemNetworkInterfaceProvider, SystemPingProbe, PlatformPingProbeFactory
-  Platforms/MacOS/            MacBoundIcmpProbe (IP_BOUND_IF), MacHardwarePortMap (networksetup)
-  Platforms/Windows/          WindowsSourceBoundIcmpProbe (IcmpSendEcho2Ex)
-NetworkDiagnostics.Tests/     xUnit tests and opt-in integration tests
-scripts/                      publish-macos.sh, publish-windows.ps1
-docs/sample-report/           real exported report
+NetworkDiagnostics.Core/    UI-free engine: models, monitoring, statistics, export, settings
+NetworkDiagnostics.App/     Avalonia UI, view models, and platform probes (Platforms/MacOS, Platforms/Windows)
+NetworkDiagnostics.Tests/   xUnit unit tests and opt-in integration tests
+scripts/                    Local packaging scripts
+docs/sample-report/         Example exported report
+.github/workflows/          Release workflow
 ```
 
-Third-party packages: Avalonia (UI), CommunityToolkit.Mvvm, and Microsoft.Extensions.DependencyInjection. The chart is a custom control, so no charting library is used.
+## Releases
+
+- [Latest release](https://github.com/harryhax/csharp_ping_monitor/releases/latest)
+- [All releases](https://github.com/harryhax/csharp_ping_monitor/releases)
+- [Release workflow runs](https://github.com/harryhax/csharp_ping_monitor/actions/workflows/release.yml)
+- [Issues](https://github.com/harryhax/csharp_ping_monitor/issues)
+
+## Contributing
+
+To report a bug, [open an issue](https://github.com/harryhax/csharp_ping_monitor/issues). Include your operating system and version, the adapter type (Wi-Fi or Ethernet), what you expected and what happened. An exported results ZIP helps; check it first, because it contains your local IP address and gateway.
+
+To propose a change, open an issue to discuss it first, then send a pull request. Make sure `dotnet test` passes.
+
+## License
+
+No license has been added to this repository yet.

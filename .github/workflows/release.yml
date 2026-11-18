@@ -75,9 +75,9 @@ jobs:
         shell: pwsh
         run: |
           Compress-Archive -Path publish/* `
-            -DestinationPath "NetworkDiagnostics-${{ github.ref_name }}-${{ matrix.rid }}.zip"
+            -DestinationPath "NetworkDiagnostics-${{ matrix.rid }}.zip"
 
-      - name: Package macOS app
+      - name: Package and sign macOS app
         if: startsWith(matrix.rid, 'osx-')
         shell: bash
         run: |
@@ -86,15 +86,51 @@ jobs:
           APP="NetworkDiagnostics.app"
           CONTENTS="$APP/Contents"
           MACOS="$CONTENTS/MacOS"
+          FRAMEWORKS="$CONTENTS/Frameworks"
           RESOURCES="$CONTENTS/Resources"
+          VERSION="${GITHUB_REF_NAME#v}"
 
-          mkdir -p "$MACOS" "$RESOURCES"
+          rm -rf "$APP"
+          mkdir -p "$MACOS" "$FRAMEWORKS" "$RESOURCES"
 
-          # Copy published files into the application bundle.
-          cp -R publish/. "$MACOS/"
+          # The self-contained publish output is a single flat folder.
+          # Fail if that ever changes, rather than producing a broken layout.
+          if [ -n "$(find publish -mindepth 1 -type d)" ]; then
+            echo "::error::Unexpected subdirectories in publish output"
+            find publish -mindepth 1 -type d
+            exit 1
+          fi
+
+          # Bundle layout:
+          #   MacOS/       the apphost executable only (plus two symlinks)
+          #   Frameworks/  every Mach-O file (runtime, Avalonia and Skia dylibs, createdump)
+          #   Resources/   managed assemblies, deps.json, runtimeconfig.json, and
+          #                symlinks to ../Frameworks for each native file
+          #
+          # codesign cannot seal non-code files inside Contents/MacOS, so the managed
+          # files live in Resources. The .NET host resolves the real path of
+          # NetworkDiagnostics.dll and then uses Resources as the application folder,
+          # loading the runtime and native libraries from there; the symlinks in
+          # Resources point it at the signed copies in Frameworks. No assembly or
+          # native-library paths are rewritten.
+          cp -p publish/NetworkDiagnostics "$MACOS/NetworkDiagnostics"
           chmod +x "$MACOS/NetworkDiagnostics"
 
-          # Generate Info.plist.
+          for f in publish/*; do
+            name="$(basename "$f")"
+            [ "$name" = "NetworkDiagnostics" ] && continue
+            if file -b "$f" | grep -q 'Mach-O'; then
+              cp -p "$f" "$FRAMEWORKS/$name"
+              ln -s "../Frameworks/$name" "$RESOURCES/$name"
+            else
+              cp -p "$f" "$RESOURCES/$name"
+            fi
+          done
+
+          # The apphost looks for these two files next to itself.
+          ln -s ../Resources/NetworkDiagnostics.dll "$MACOS/NetworkDiagnostics.dll"
+          ln -s ../Frameworks/libhostfxr.dylib "$MACOS/libhostfxr.dylib"
+
           cat > "$CONTENTS/Info.plist" <<EOF
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
@@ -117,28 +153,41 @@ jobs:
             <string>APPL</string>
 
             <key>CFBundleShortVersionString</key>
-            <string>${GITHUB_REF_NAME#v}</string>
+            <string>${VERSION}</string>
 
             <key>CFBundleVersion</key>
             <string>${{ github.run_number }}</string>
 
             <key>NSHighResolutionCapable</key>
             <true/>
+
+            <key>NSLocalNetworkUsageDescription</key>
+            <string>Network Diagnostics sends ping requests to your router to measure local network latency and packet loss.</string>
           </dict>
           </plist>
           EOF
 
-          # Validate bundle metadata.
           plutil -lint "$CONTENTS/Info.plist"
 
-          # Do not ad-hoc sign the bundle yet.
-          # The published .NET files are not currently arranged
-          # for reliable macOS bundle sealing.
-          # Proper signing and notarization will be added later.
+          # Ad-hoc sign the nested native code first, then the bundle (which signs
+          # the main executable and seals Resources). No --deep.
+          # Ad-hoc signing is not a Developer ID signature or notarization:
+          # Gatekeeper still blocks a downloaded copy until the user allows it.
+          for f in "$FRAMEWORKS"/*; do
+            codesign --force --sign - --timestamp=none "$f"
+          done
+          codesign --force --sign - --timestamp=none "$APP"
 
-          # Preserve the macOS application bundle structure.
-          ditto -c -k --keepParent "$APP" \
-            "NetworkDiagnostics-${{ github.ref_name }}-${{ matrix.rid }}.zip"
+          codesign --verify --strict --verbose=2 "$APP"
+
+          # Preserve the .app bundle, symlinks and permissions.
+          ditto -c -k --keepParent "$APP" "NetworkDiagnostics-${{ matrix.rid }}.zip"
+
+          # Check the archive as a user would receive it.
+          mkdir -p zipcheck
+          ditto -x -k "NetworkDiagnostics-${{ matrix.rid }}.zip" zipcheck
+          codesign --verify --strict --verbose=2 "zipcheck/$APP"
+          test -x "zipcheck/$APP/Contents/MacOS/NetworkDiagnostics"
 
       - name: Upload release asset
         env:
@@ -147,5 +196,5 @@ jobs:
         shell: bash
         run: |
           gh release upload "${{ github.ref_name }}" \
-            "NetworkDiagnostics-${{ github.ref_name }}-${{ matrix.rid }}.zip" \
+            "NetworkDiagnostics-${{ matrix.rid }}.zip" \
             --clobber
