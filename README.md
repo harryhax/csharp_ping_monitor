@@ -1,6 +1,12 @@
 # Network Diagnostics
 
-Network Diagnostics is a cross-platform desktop application for Windows and macOS. It monitors network connectivity, latency and packet loss to your local router and to an internet host at the same time, so you can tell a local network problem from an internet problem.
+**Lagging in GTA Online, Counter-Strike 2, Fortnite or Call of Duty? Find out why.**
+
+Network Diagnostics is a free desktop application for Windows and macOS that helps gamers investigate high ping, latency spikes, packet loss and unstable internet connections.
+
+If you're seeing rubberbanding, delayed hit registration, random disconnects or sudden lag in an online match, Network Diagnostics helps you work out whether the problem starts on your home network or on your internet connection.
+
+Unlike a one-off speed test, Network Diagnostics monitors your connection for up to 30 minutes at a time, so you can spot intermittent problems that only appear while you play.
 
 [![Latest Release](https://img.shields.io/github/v/release/harryhax/csharp_ping_monitor?label=release)](https://github.com/harryhax/csharp_ping_monitor/releases/latest)
 [![Build Status](https://img.shields.io/github/actions/workflow/status/harryhax/csharp_ping_monitor/release.yml?label=release%20build)](https://github.com/harryhax/csharp_ping_monitor/actions/workflows/release.yml)
@@ -19,6 +25,33 @@ Network Diagnostics is a cross-platform desktop application for Windows and macO
 | macOS | Intel (x64) | [NetworkDiagnostics-osx-x64.zip](https://github.com/harryhax/csharp_ping_monitor/releases/latest/download/NetworkDiagnostics-osx-x64.zip) |
 
 These links always download the newest release. The version number is shown on the release page and in the badge above.
+
+## Why use Network Diagnostics?
+
+- **Investigate high ping.** Watch latency over time and spot sudden spikes that disrupt online play.
+- **Detect packet loss.** Find dropped packets that can cause rubberbanding, stuttering and unstable connections.
+- **Separate local problems from internet problems.** Monitor your router and an internet destination at the same time to see where the trouble begins.
+- **Troubleshoot Wi-Fi and Ethernet.** Run a test on each network adapter, for example Wi-Fi and then Ethernet, and compare the results.
+- **Catch intermittent problems.** Leave a test running while you play to catch issues a short speed test can miss.
+- **Review what happened.** Use the latency graphs, the session event log and exported session data to investigate recurring issues.
+
+### Games and applications
+
+Network Diagnostics can help troubleshoot connection problems in online games such as:
+
+- Grand Theft Auto Online (GTA Online)
+- Counter-Strike 2 (CS2)
+- Fortnite
+- Call of Duty / Warzone
+- Valorant
+- Apex Legends
+- Minecraft multiplayer
+- Rocket League
+- Other online multiplayer games
+
+**How it works:** Network Diagnostics measures your router (local gateway) and an internet destination (`8.8.8.8` by default). This shows whether latency spikes and packet loss happen close to your computer or farther along your connection. It does not measure ping to a game's own servers. You can enter a server's address as the external target, but many game servers do not answer ping requests.
+
+**Important:** Network Diagnostics is a diagnostic tool, not a ping booster, VPN or game network optimizer. It does not change your internet connection or guarantee lower in-game ping. Its purpose is to give you evidence so you can find and fix the underlying problem.
 
 ## Features
 
@@ -50,7 +83,7 @@ The statuses are measurements, not a diagnosis.
 
 ## Screenshots
 
-> Screenshots have not been added yet. *(Placeholder: add an image of the main window to `docs/` and reference it here.)*
+![Network Diagnostics on macOS after a 15-minute test, showing router and internet latency graphs and statistics](screenshots/ss_01.png)
 
 ## Installation
 
